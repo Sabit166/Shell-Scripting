@@ -18,35 +18,48 @@ for ((i=0; i<n; i++)); do
     remaining_time[i]=${burst_time[i]}
 done
 
-time=0
-completed=0
-while ((completed < n)); do
-    min_rt=9999
-    idx=-1
-    for ((i=0; i<n; i++)); do
-        if (( arrival_time[i]<=time && remaining_time[i]>0 && remaining_time[i]<min_rt )); then
-            min_rt=${remaining_time[i]}
-            idx=$i
+Shortest_Remaining_Time_First() {
+    local -n arrival_time=$1
+    local -n burst_time=$2
+    local -n remaining_time=$3
+    local -n completion_time=$4
+    local -n turnaround_time=$5
+    local -n waiting_time=$6
+
+    local n=${#arrival_time[@]}
+    local completed=0
+    local time=0
+
+    while (( completed < n )); do
+        local min_rt=9999
+        local idx=-1
+
+        for ((i=0; i<n; i++)); do
+            if (( arrival_time[i] <= time && remaining_time[i] > 0 && remaining_time[i] < min_rt )); then
+                min_rt=${remaining_time[i]}
+                idx=$i
+            fi
+        done
+
+        ((time++))
+        if (( idx == -1 )); then
+            continue
+        fi
+        ((remaining_time[idx]--))
+        
+
+        if (( remaining_time[idx] == 0 )); then
+            completion_time[idx]=$time
+            turnaround_time[idx]=$((completion_time[idx] - arrival_time[idx]))
+            waiting_time[idx]=$((turnaround_time[idx] - burst_time[idx]))
+            ((completed++))
         fi
     done
+}
 
-    if (( idx==-1 )); then
-        ((time++))
-        continue
-    fi
+Shortest_Remaining_Time_First arrival_time burst_time remaining_time completion_time turnaround_time waiting_time
 
-    ((remaining_time[idx]--))
-    ((time++))
-
-    if (( remaining_time[idx]==0 )); then
-        completion_time[idx]=$time
-        turnaround_time[idx]=$((completion_time[idx]-arrival_time[idx]))
-        waiting_time[idx]=$((turnaround_time[idx]-burst_time[idx]))
-        ((completed++))
-    fi
-done
-
-echo "PID AT BT CT TAT WT"
+echo "PID   AT   BT   CT   TAT   WT"
 for ((i=0; i<n; i++)); do
-    echo "P$((i+1)) ${arrival_time[i]} ${burst_time[i]} ${completion_time[i]} ${turnaround_time[i]} ${waiting_time[i]}"
+    printf "P%-3d %-4d %-4d %-4d %-5d %-4d\n" $((i+1)) ${arrival_time[i]} ${burst_time[i]} ${completion_time[i]} ${turnaround_time[i]} ${waiting_time[i]}
 done

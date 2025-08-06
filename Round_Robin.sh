@@ -21,33 +21,47 @@ for ((i=0; i<n; i++)); do
     remaining_time[i]=${burst_time[i]}
 done
 
-time=0
-completed=0
+Round_Robin() {
+    local -n arrival_time=$1
+    local -n burst_time=$2
+    local -n remaining_time=$3
+    local -n completion_time=$4
+    local -n turnaround_time=$5
+    local -n waiting_time=$6
+    local n=$7
+    local tq=$8
 
-while ((completed<n)); do
-    executed=false
-    for ((i=0; i<n; i++)); do
-        if ((remaining_time[i]>0 && arrival_time[i]<=time)); then
-            executed=true
-            if ((remaining_time[i]>tq)); then
-                time=$((time+tq))
-                remaining_time[i]=$((remaining_time[i]-tq))
-            else
-                time=$((time+remaining_time[i]))
-                remaining_time[i]=0
-                completion_time[i]=$time
-                turnaround_time[i]=$((completion_time[i]-arrival_time[i]))
-                waiting_time[i]=$((turnaround_time[i]-burst_time[i]))
-                ((completed++))
+    local time=0
+    local completed=0
+
+    while [ $completed -lt $n ]; do
+        local executed=0
+        for ((i=0; i<n; i++)); do
+            if [ ${remaining_time[i]} -gt 0 ] && [ ${arrival_time[i]} -le $time ]; then
+                executed=1
+                if [ ${remaining_time[i]} -gt $tq ]; then
+                    time=$((time + tq))
+                    remaining_time[i]=$((remaining_time[i] - tq))
+                else
+                    time=$((time + remaining_time[i]))
+                    remaining_time[i]=0
+                    completion_time[i]=$time
+                    turnaround_time[i]=$((completion_time[i] - arrival_time[i]))
+                    waiting_time[i]=$((turnaround_time[i] - burst_time[i]))
+                    ((completed++))
+                fi
             fi
+        done
+
+        if [ $executed -eq 0 ]; then
+            ((time++))
         fi
     done
-    if [ "$executed" = false ]; then
-        ((time++))
-    fi
-done
+}
 
-echo "PID AT BT CT TAT WT"
+Round_Robin arrival_time burst_time remaining_time completion_time turnaround_time waiting_time $n $tq
+
+echo "PID  AT  BT  CT  TAT  WT"
 for ((i=0; i<n; i++)); do
-    echo "P$((i+1)) ${arrival_time[i]} ${burst_time[i]} ${completion_time[i]} ${turnaround_time[i]} ${waiting_time[i]}"
+    echo "P$((i+1))   ${arrival_time[i]}   ${burst_time[i]}   ${completion_time[i]}   ${turnaround_time[i]}   ${waiting_time[i]}"
 done

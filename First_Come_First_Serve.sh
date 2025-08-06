@@ -20,22 +20,22 @@ done
 
 # Bubble sort function
 bubble_sort() {
-    local -n arr1=$1  # arrival_time array
-    local -n arr2=$2  # burst_time array
-    local n=${#arr1[@]}  # Get array length
+    local -n arrival_time=$1  # arrival_time array
+    local -n burst_time=$2  # burst_time array
+    local n=${#arrival_time[@]}  # Get array length
 
     for ((i=0; i<n-1; i++)); do
         for ((j=0; j<n-i-1; j++)); do
-            if (( arr1[j] > arr1[j+1] )); then
+            if (( arrival_time[j] > arrival_time[j+1] )); then
                 # Swap elements of arrival time
-                temp=${arr1[j]}
-                arr1[j]=${arr1[j+1]}
-                arr1[j+1]=$temp
+                temp=${arrival_time[j]}
+                arrival_time[j]=${arrival_time[j+1]}
+                arrival_time[j+1]=$temp
 
                 # Swap elements of burst time
-                temp=${arr2[j]}
-                arr2[j]=${arr2[j+1]}
-                arr2[j+1]=$temp
+                temp=${burst_time[j]}
+                burst_time[j]=${burst_time[j+1]}
+                burst_time[j+1]=$temp
             fi
         done
     done
